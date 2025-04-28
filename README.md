@@ -1,6 +1,6 @@
 # Multiline Variable Font Generator
 
-This script creates variable fonts with offset lines in Glyphs 3. It works by duplicating and offsetting lines across multiple masters. The Glyphs file needs to have 5 Masters with a weight axis setup correctly for all masters.
+This script creates variable fonts with offset lines in Glyphs 3. It works by duplicating and offsetting lines across multiple masters. The Glyphs file needs to have 5 Masters with a weight axis setup correctly for all masters. There are some helper scripts in there as well. The multiline is the main script and the others help with clearing layers and paths and one helps with keeping the glyphs uniwidth across masters and layers. Layers are here for bracket layers to keep single line and double line compatible.
 
 ## How it Works
 
