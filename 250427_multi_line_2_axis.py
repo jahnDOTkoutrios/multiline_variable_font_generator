@@ -140,14 +140,14 @@ def calculate_diagonal_offset(path, desired_distance):
 class MultiLineVariableUI:
     def __init__(self):
         # Default values
-        self.original_offset = 70
+        self.original_offset = -70
         self.min_stroke_width = 10
         self.medium_stroke_width = 35
         self.max_stroke_width = 60
         self.maintain_y_position = True  # Default to True
         
-        # Create the window with a larger height
-        self.w = FloatingWindow((400, 400), "Multi Line Variable Settings")
+        # Create the window with a reduced height
+        self.w = FloatingWindow((400, 340), "Multi Line Variable Settings")
         
         # Create UI elements
         y = 10
@@ -174,10 +174,6 @@ class MultiLineVariableUI:
         self.w.max_stroke_width = EditText((10, y, 380, 22), "", callback=self.saveSettings)
         y += 40
         
-        # Toggle for maintaining Y position
-        self.w.maintain_y_position = CheckBox((10, y, 380, 22), "Maintain Y position for diagonal lines", value=True, callback=self.saveSettings)
-        y += 40
-        
         # Add some padding before the button
         y += 20
         
@@ -202,7 +198,6 @@ class MultiLineVariableUI:
         self.min_stroke_width = self.safe_float(self.w.min_stroke_width.get(), 10)
         self.medium_stroke_width = self.safe_float(self.w.medium_stroke_width.get(), 40)
         self.max_stroke_width = self.safe_float(self.w.max_stroke_width.get(), 80)
-        self.maintain_y_position = self.w.maintain_y_position.get()
     
     def loadSettings(self):
         # Load all settings into UI
@@ -335,13 +330,13 @@ class MultiLineVariableUI:
                     # For master 1 bracket layer, add only the offset/duplicate paths for centered, and original+offset for non-centered
                     for path in processed_paths_other:
                         new_path = path.copy()
-                        set_stroke_attributes(new_path, 10, 10)
+                        set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                         bracket_layer.shapes.append(new_path)
                 else:
                     # For other masters, only add original (pre-offset) paths
                     for path in original_paths:
                         new_path = path.copy()
-                        set_stroke_attributes(new_path, 10, 10)
+                        set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                         bracket_layer.shapes.append(new_path)
                 # Now set LSB/RSB to match the original master width and proportions
                 bracket_layer.width = original_width
@@ -352,57 +347,57 @@ class MultiLineVariableUI:
                 bracket_layer.updateMetrics()
                 glyph.layers.append(bracket_layer)
 
-            add_bracket_layer(master1, GSLayer(), 10)
-            add_bracket_layer(master2, GSLayer(), 10)
-            add_bracket_layer(master3, GSLayer(), 10)
-            add_bracket_layer(master4, GSLayer(), 10)
-            add_bracket_layer(master5, GSLayer(), 10)
+            add_bracket_layer(master1, GSLayer(), self.min_stroke_width)
+            add_bracket_layer(master2, GSLayer(), self.min_stroke_width)
+            add_bracket_layer(master3, GSLayer(), self.min_stroke_width)
+            add_bracket_layer(master4, GSLayer(), self.min_stroke_width)
+            add_bracket_layer(master5, GSLayer(), self.min_stroke_width)
 
-            # --- Master 1: only original paths (thickness 10) ---
+            # --- Master 1: only original paths (thickness min_stroke_width) ---
             for path in processed_paths_master1:
                 if path.attributes.get('mlv_type') == 'original':
                     new_path = path.copy()
-                    set_stroke_attributes(new_path, 10, 10)
+                    set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                     layer1.shapes.append(new_path)
 
-            # --- Master 2: original and duplicate as before (use thickness 10 for both) ---
+            # --- Master 2: original and duplicate as before (use min_stroke_width for both) ---
             for path in processed_paths_other:
                 new_path = path.copy()
-                set_stroke_attributes(new_path, 10, 10)
+                set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                 layer2.shapes.append(new_path)
 
-            # --- Master 3: original=35, duplicate=10 (but for diagonals, offset_direction 0=35, 1=10) ---
+            # --- Master 3: original=medium, duplicate=min (for diagonals, offset_direction 0=medium, 1=min) ---
             for path in processed_paths_other:
                 new_path = path.copy()
                 if path.attributes.get('mlv_type') == 'original':
-                    set_stroke_attributes(new_path, 35, 35)
+                    set_stroke_attributes(new_path, self.medium_stroke_width, self.medium_stroke_width)
                 elif path.attributes.get('mlv_type') == 'duplicate' and 'offset_direction' in path.attributes:
                     if path.attributes['offset_direction'] == 0:
-                        set_stroke_attributes(new_path, 35, 35)
+                        set_stroke_attributes(new_path, self.medium_stroke_width, self.medium_stroke_width)
                     else:
-                        set_stroke_attributes(new_path, 10, 10)
+                        set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                 else:
-                    set_stroke_attributes(new_path, 10, 10)
+                    set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                 layer3.shapes.append(new_path)
 
-            # --- Master 4: original=10, duplicate=60 (but for diagonals, offset_direction 0=10, 1=60) ---
+            # --- Master 4: original=min, duplicate=max (for diagonals, offset_direction 0=min, 1=max) ---
             for path in processed_paths_other:
                 new_path = path.copy()
                 if path.attributes.get('mlv_type') == 'original':
-                    set_stroke_attributes(new_path, 10, 10)
+                    set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                 elif path.attributes.get('mlv_type') == 'duplicate' and 'offset_direction' in path.attributes:
                     if path.attributes['offset_direction'] == 0:
-                        set_stroke_attributes(new_path, 10, 10)
+                        set_stroke_attributes(new_path, self.min_stroke_width, self.min_stroke_width)
                     else:
-                        set_stroke_attributes(new_path, 60, 60)
+                        set_stroke_attributes(new_path, self.max_stroke_width, self.max_stroke_width)
                 else:
-                    set_stroke_attributes(new_path, 60, 60)
+                    set_stroke_attributes(new_path, self.max_stroke_width, self.max_stroke_width)
                 layer4.shapes.append(new_path)
 
-            # --- Master 5: both original and duplicate = 60 ---
+            # --- Master 5: both original and duplicate = max_stroke_width ---
             for path in processed_paths_other:
                 new_path = path.copy()
-                set_stroke_attributes(new_path, 60, 60)
+                set_stroke_attributes(new_path, self.max_stroke_width, self.max_stroke_width)
                 layer5.shapes.append(new_path)
 
             # --- Sidebearings and metrics sync ---
